@@ -2,18 +2,24 @@
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-
-#define LED 2
-
+#include <OneWire.h>
+#include <DallasTemperature.h>
+ 
 const char* ssid = "MikroTik2G";
 const char* password = "abcdef0987654321";
 
-void setup() {
-  
-  pinMode(LED, OUTPUT);
+// Data wire is connected to GPIO15
+#define ONE_WIRE_BUS 15
+// Setup a oneWire instance to communicate with a OneWire device
+OneWire oneWire(ONE_WIRE_BUS);
+// Pass our oneWire reference to Dallas Temperature sensor 
+DallasTemperature sensors(&oneWire);
 
+void setup() {
   Serial.begin(115200);
   Serial.println("Booting");
+  sensors.begin();
+  Serial.println("Start OneWare");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
   while (WiFi.waitForConnectResult() != WL_CONNECTED) {
@@ -71,11 +77,10 @@ void setup() {
 void loop() {
   ArduinoOTA.handle();
 
-  // put your main code here, to run repeatedly:
-  digitalWrite(LED, HIGH);
-  Serial.println("LED is on");
+  sensors.requestTemperatures(); 
+  float temperatureC = sensors.getTempCByIndex(0);
+  Serial.print(temperatureC);
+  Serial.println("ºC");
   delay(1000);
-  digitalWrite(LED, LOW);
-  Serial.println("LED is off");
-  delay(1000);  
+
 }
